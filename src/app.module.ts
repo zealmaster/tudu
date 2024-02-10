@@ -26,6 +26,9 @@ dotenv.config()
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer.apply(CsrfMiddleware)
-    .forRoutes({path: 'auth/csrf', method: RequestMethod.GET})
+    .forRoutes(
+      {path: 'auth/csrf', method: RequestMethod.GET},
+      {path: 'user/', method: RequestMethod.POST}
+      )
   }
 }
