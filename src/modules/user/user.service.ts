@@ -14,16 +14,23 @@ export class UserService {
   ) {}
 
   public async createUser(createUser: CreateUserDto) {
-    const userExists = await this.userModel.findOne(
-        { 
-            username: createUser?.username, 
-            email: createUser?.email 
-        });
+    const userExists = await this.userModel.findOne({
+      username: createUser?.username,
+    });
     if (userExists)
       return {
         success: false,
-        msg: 'Username and email exist',
+        msg: 'Username already exists',
       };
+    const emailExists = await this.userModel.findOne({
+      email: createUser?.email,
+    });
+    if (emailExists)
+      return {
+        success: false,
+        msg: 'Email already exists',
+      };
+
     const user = {
       username: createUser.username,
       firstName: createUser.firstName,
