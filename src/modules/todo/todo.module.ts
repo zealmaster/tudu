@@ -9,7 +9,10 @@ import { User, UserSchema } from 'src/schema/user.schema';
   controllers: [TodoController],
   providers: [TodoService],
   imports: [
-    MongooseModule.forFeature([{name: ToDo.name, schema: ToDoSchema}])
+    MongooseModule.forFeature([
+      {name: ToDo.name, schema: ToDoSchema}, 
+      {name: User.name, schema: UserSchema}
+    ])
   ]
 })
 export class TodoModule {}

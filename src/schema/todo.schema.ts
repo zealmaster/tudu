@@ -8,7 +8,7 @@ export class ToDo {
         name: 'user_id',
         type: mongoose.Schema.Types.ObjectId, ref: () => User 
     })
-    user: User;
+    userId: User;
 
     @Prop({
         type: 'string'
@@ -26,9 +26,16 @@ export class ToDo {
     dueDate: Date;
 
     @Prop({
+        name: 'completed',
+        type: 'boolean',
+        default: false
+    })
+    completed: boolean;
+
+    @Prop({
         name: 'shared_with',
         type: 'string',
-        default: null
+        default: []
     })
     sharedWith: string[];
     
