@@ -3,11 +3,13 @@ import { TodoService } from './todo.service';
 import { AddTaskDto } from './dto/add.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { ShareTaskDto } from './dto/sharetask.dto';
+import { UserService } from '../user/user.service';
 
 @Controller('todo')
 export class TodoController {
     constructor(
-        private toDoService: TodoService
+        private toDoService: TodoService,
+        private userService: UserService
     ) {}
 
     @Post('task')
@@ -26,6 +28,9 @@ export class TodoController {
     @Put('task/share/:id')
     @UseGuards(AuthGuard('jwt'))
     async shareTask(@Body() body: ShareTaskDto, @Req() req, @Param() taskId: string) {
-        return await this.toDoService.shareTask(req.user.id, body.email, {id: taskId});
+        const userId = req.user.id;
+        const user = await this.userService.findUserById(userId);
+        if (body.email == user.email) return;
+        return await this.toDoService.shareTask(userId, body.email, {id: taskId});
     }
 }

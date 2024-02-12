@@ -47,4 +47,8 @@ export class UserService {
   public async findAllUsers() {
     return await this.userModel.find();
   }
+
+  public async findUserById(userId: string) {
+    return await this.userModel.findOne({_id: userId});
+  }
 }
