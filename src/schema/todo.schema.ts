@@ -5,10 +5,9 @@ import { User } from "./user.schema";
 @Schema()
 export class ToDo {
     @Prop({
-        name: 'user_id',
         type: mongoose.Schema.Types.ObjectId, ref: () => User 
     })
-    user: User;
+    author: User;
 
     @Prop({
         type: 'string'
@@ -26,21 +25,29 @@ export class ToDo {
     dueDate: Date;
 
     @Prop({
+        name: 'completed',
+        type: 'boolean',
+        default: false
+    })
+    completed: boolean;
+
+    @Prop({
         name: 'shared_with',
-        type: 'string',
-        default: null
+        default: new Array()
     })
     sharedWith: string[];
     
     @Prop({
         name: 'created_at',
-        type: 'date'
+        type: 'date',
+        default: Date.now
     })
     createdAt: Date;
 
     @Prop({
         name: 'created_at',
-        type: 'date'
+        type: 'date',
+        default: Date.now
     })
     updatedAt: Date;
 }

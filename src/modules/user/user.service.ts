@@ -36,9 +36,7 @@ export class UserService {
       firstName: createUser.firstName,
       lastName: createUser.lastName,
       email: createUser.email,
-      password: await bcrypt.hash(createUser.password, 10),
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      password: await bcrypt.hash(createUser.password, 10)
     };
     const newUser = new this.userModel(user);
     return newUser.save();
@@ -46,5 +44,9 @@ export class UserService {
 
   public async findAllUsers() {
     return await this.userModel.find();
+  }
+
+  public async findUserById(userId: string) {
+    return await this.userModel.findOne({_id: userId});
   }
 }
