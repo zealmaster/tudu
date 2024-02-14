@@ -9,6 +9,7 @@ import { EmailModule } from './modules/email/email.module';
 import { JwtStrategy } from './modules/auth/jwt.strategy';
 import * as dotenv from 'dotenv';
 import { CsrfMiddleware } from './middlewares/csrf.middleware';
+import { GroupModule } from './modules/group/group.module';
 
 dotenv.config()
 
@@ -18,7 +19,7 @@ dotenv.config()
     UserModule, 
     AuthModule, 
     TodoModule, 
-    EmailModule
+    EmailModule, GroupModule
   ],
   controllers: [AppController],
   providers: [AppService, JwtStrategy],
