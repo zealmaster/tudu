@@ -4,6 +4,7 @@ import mongoose, { Model } from 'mongoose';
 import { ToDo } from 'src/schema/todo.schema';
 import { AddTaskDto } from './dto/add.dto';
 import { User } from 'src/schema/user.schema';
+import { UpdateTaskDto } from './dto/updateTask.dto';
 
 @Injectable()
 export class TodoService {
@@ -16,13 +17,12 @@ export class TodoService {
 
   public async addToDo(email: string, data: AddTaskDto) {
     const user = await this.userModel.findOne({ email });
+    delete user.password;
     const newToDo = {
-      userId: user.id,
+      author: user,
       title: data.title,
       description: data.description,
       dueDate: new Date(data?.dueDate),
-      createdAt: new Date(),
-      updatedAt: new Date(),
     };
     const createToDo = new this.toDoModel(newToDo);
 
@@ -33,11 +33,12 @@ export class TodoService {
     };
   }
 
-  public async getTasksByUser(userId: string) {
-    const tasks = await this.toDoModel.find({ userId });
+  public async getTasksByUser(author: string, email: string) {
+    const tasks = await this.toDoModel.find({ author });
+    const shareWithMe = await this.toDoModel.find({ sharedWith: email });
     return {
       success: true,
-      tasks,
+      tasks: { ...tasks, ...shareWithMe },
     };
   }
 
@@ -81,5 +82,57 @@ export class TodoService {
         error: error.message,
       };
     }
+  }
+
+  public async updateTask(id: string, data: UpdateTaskDto, email: string) {
+    const taskId = new mongoose.Types.ObjectId(id);
+    const taskExists = await this.toDoModel.findOne({ _id: taskId });
+    if (!taskExists) return { success: false, message: 'Task does not exist' };
+
+    const author = await this.userModel.findOne({ email });
+
+    if (author.id == taskExists.author) {
+      await this.toDoModel.updateOne(
+        { _id: taskId },
+        {
+          $set: {
+            title: data?.title,
+            completed: data?.completed,
+            description: data?.description,
+            dueDate: data?.dueDate,
+          },
+        }
+      );
+
+      return {
+        success: true,
+        message: 'Task update successful.',
+      };
+    }
+    return {
+      success: false,
+      message: 'Task update failed',
+    };
+  }
+
+  public async deleteTask(id: string, email: string) {
+    const taskId = new mongoose.Types.ObjectId(id);
+
+    const taskExists = await this.toDoModel.findOne({ _id: taskId });
+    if (!taskExists) return { success: false, message: 'Task does not exist' };
+
+    const author = await this.userModel.findOne({ email });
+
+    if (author.id == taskExists.author) {
+      await this.toDoModel.deleteOne({ _id: taskId });
+      return {
+        success: true,
+        message: 'Task delete successfull.',
+      };
+    }
+    return {
+      success: false,
+      message: 'Task delete failed.',
+    };
   }
 }

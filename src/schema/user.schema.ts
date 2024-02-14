@@ -38,14 +38,14 @@ export class User {
   @Prop({
     name: 'created_at',
     type: 'date',
-    default: () => 'current_timestamp',
+    default: Date.now,
   })
   createdAt: Date;
 
   @Prop({
     name: 'updated_at',
     type: 'date',
-    default: () => 'current_timestamp',
+    default: Date.now,
   })
   updatedAt: Date;
 }
