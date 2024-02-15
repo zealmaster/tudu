@@ -15,7 +15,7 @@ export class Group {
     todos: [ToDo];
 
     @Prop({
-        ref: () => User
+        type: mongoose.Schema.Types.ObjectId, ref: () => User
     })
     owner: User;
 }
