@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Param, Post, Put, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Req, UseGuards } from '@nestjs/common';
 import { GroupService } from './group.service';
 import { AuthGuard } from '@nestjs/passport';
 import { CreateGroupDto } from './dto/create.dto';
@@ -14,6 +14,12 @@ export class GroupController {
     return await this.groupService.createGroup(req.user.id, body);
   }
 
+  @Get()
+  @UseGuards(AuthGuard('jwt'))
+  async getGroupByOwner(@Req() req) {
+    return this.groupService.getGroupByOwner(req.user.id);
+  }
+  
   @Put('add/user/:id')
   @UseGuards(AuthGuard('jwt'))
   async addUserToGroup(@Body() body: AddUserDto, @Param() groupId: string, @Req() req) {

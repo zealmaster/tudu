@@ -30,6 +30,15 @@ export class GroupService {
     return { success: true, message: 'Group created successfully.' };
   }
 
+  public async getGroupByOwner(id: string) {
+    const ownerId = new mongoose.Types.ObjectId(id);
+    const group = await this.groupModel.find({ owner: ownerId });
+    return {
+      success: true,
+      group
+    }
+  }
+
   public async addUser(id: string, groupId: string, email: string) {
     const ownerId = new mongoose.Types.ObjectId(id);
     const owner = await this.userModel.findOne({ _id: ownerId });
@@ -68,12 +77,12 @@ export class GroupService {
       message: 'Failed to remove user from the group.'
     }
 
-      for (let i = groupExists.users.length - 1; i >= 0; i--) {
-        if (groupExists.users[i].email === email) {
-          groupExists.users.splice(i, 1)[0];
-          await groupExists.save()
-        } 
+    for (let i = groupExists.users.length - 1; i >= 0; i--) {
+      if (groupExists.users[i].email === email) {
+        groupExists.users.splice(i, 1)[0];
+        await groupExists.save()
       }
-      return { success: true, message: 'User removed successfully.' }
+    }
+    return { success: true, message: 'User removed successfully.' }
   }
 }
