@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import mongoose, { Model } from 'mongoose';
+import mongoose, { Model, Mongoose } from 'mongoose';
 import { Group } from 'src/schema/group.schema';
 import { CreateGroupDto } from './dto/create.dto';
 import { User } from 'src/schema/user.schema';
+import { ToDo } from 'src/schema/todo.schema';
 
 @Injectable()
 export class GroupService {
@@ -11,7 +12,9 @@ export class GroupService {
     @InjectModel(Group.name)
     private groupModel: Model<Group>,
     @InjectModel(User.name)
-    private userModel: Model<User>
+    private userModel: Model<User>,
+    @InjectModel(ToDo.name)
+    private todoModel: Model<ToDo>
   ) { }
 
   public async createGroup(owner: string, data: CreateGroupDto) {
@@ -84,5 +87,46 @@ export class GroupService {
       }
     }
     return { success: true, message: 'User removed successfully.' }
+  }
+
+  public async getUsersInGroup(owner: string, groupId: string) {
+    const ownerId = new mongoose.Types.ObjectId(owner);
+    const groupIdObj = new mongoose.Types.ObjectId(groupId);
+
+    const group = await this.groupModel.findOne({ _id: groupIdObj, owner: ownerId });
+
+    if (group) {
+      return {
+        success: true,
+        name: group.name,
+        users: group.users
+      }
+    }
+  }
+
+  public async addTaskToGroup(userId: string, groupId: string, taskId: string) {
+    const taskIdObj = new mongoose.Types.ObjectId(taskId);
+    const groupIdObj = new mongoose.Types.ObjectId(groupId);
+
+    const task = await this.todoModel.findOne({ _id: taskIdObj });
+
+    const group = await this.groupModel.findOne({ _id: groupIdObj });
+
+    if (task.author.toString() === userId || group.owner.toString() === userId) {
+      for (let tasks of group.todos) {
+        if ((
+          tasks.author.toString() === task.author.toString())
+          && tasks.createdAt.toDateString() == task.createdAt.toDateString()
+          && tasks.title === task.title) {
+          return { success: false, message: 'Task already added.' }
+        }
+      }
+      await this.groupModel.updateOne({ _id: groupIdObj}, {$push: {todos: task}});
+
+      return {success: true, message: 'Task added successfully.'}
+    } else {
+      return {success: false, message: 'Failed to add task.'}
+    }
+
   }
 }

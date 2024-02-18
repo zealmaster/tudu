@@ -3,6 +3,7 @@ import { GroupService } from './group.service';
 import { AuthGuard } from '@nestjs/passport';
 import { CreateGroupDto } from './dto/create.dto';
 import { AddUserDto } from './dto/addUser.dto';
+import { AddTaskDto } from './dto/addTask.dto';
 
 @Controller('group')
 export class GroupController {
@@ -31,4 +32,41 @@ export class GroupController {
   async removeUserFromGroup(@Body() body: AddUserDto, @Param() groupId: string, @Req() req) {
     return await this.groupService.removeUserFromGroup(req.user.id, groupId, body.email);
   }
+
+  @Get('user/:id')
+  @UseGuards(AuthGuard('jwt'))
+  async getUsersInGroup(@Param() id: string, @Req() req) {
+    return await this.groupService.getUsersInGroup(req.user.id, id);
+  }
+
+  @Put('add/task/:id')
+  @UseGuards(AuthGuard('jwt'))
+  async addTaskToGroup(@Body() body: AddTaskDto, @Req() req, @Param() groupId: string) {
+    return await this.groupService.addTaskToGroup(req.user.id, groupId, body.taskId);
+  }
+
+  @Get('task')
+  @UseGuards(AuthGuard('jwt'))
+  async getTasksInGroup() {
+
+  }
+
+  @Delete('task/:id')
+  @UseGuards(AuthGuard('jwt'))
+  async removeTaskFromGroup() {
+
+  }
+
+  @Get('/:id')
+  @UseGuards(AuthGuard('jwt'))
+  async getGroupById() {
+
+  }
+
+  @Put('/:id')
+  @UseGuards(AuthGuard('jwt'))
+  async editGroupName() {
+
+  }
+
 }
