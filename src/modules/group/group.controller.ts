@@ -45,16 +45,16 @@ export class GroupController {
     return await this.groupService.addTaskToGroup(req.user.id, groupId, body.taskId);
   }
 
-  @Get('task')
+  @Get('task/:id')
   @UseGuards(AuthGuard('jwt'))
-  async getTasksInGroup() {
-
+  async getTasksInGroup(@Param('id') groupId: string, @Req() req) {
+    return await this.groupService.getTasksInGroup(req.user.id, groupId);
   }
 
   @Delete('task/:id')
   @UseGuards(AuthGuard('jwt'))
-  async removeTaskFromGroup() {
-
+  async removeTaskFromGroup(@Body() body: AddTaskDto, @Param('id') groupId: string, @Req() req) {
+    return this.groupService.removeTaskFromGroup(req.user.id, groupId, body.taskId)
   }
 
   @Get('/:id')

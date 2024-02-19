@@ -121,12 +121,64 @@ export class GroupService {
           return { success: false, message: 'Task already added.' }
         }
       }
-      await this.groupModel.updateOne({ _id: groupIdObj}, {$push: {todos: task}});
+      await this.groupModel.updateOne({ _id: groupIdObj }, { $push: { todos: task } });
 
-      return {success: true, message: 'Task added successfully.'}
+      return { success: true, message: 'Task added successfully.' }
     } else {
-      return {success: false, message: 'Failed to add task.'}
+      return { success: false, message: 'Failed to add task.' }
+    }
+  }
+
+  public async getTasksInGroup(owner: string, groupId: string) {
+    const ownerId = new mongoose.Types.ObjectId(owner);
+    const groupIdObj = new mongoose.Types.ObjectId(groupId);
+    const user = await this.userModel.findOne({ _id: owner });
+    let todos = {}
+    const byGroupOwner = await this.groupModel.findOne({ _id: groupIdObj, owner: ownerId });
+
+    if (byGroupOwner == undefined) {
+      const group = await this.groupModel.findOne({ _id: groupIdObj });
+      if (group == undefined) return { success: false, message: 'Group not found' };
+      for (let users of group.users) {
+        if (users.email == user.email) {
+          const member = await this.groupModel.findOne({ users: user });
+          todos = member.todos
+          return {
+            success: true,
+            name: group.name,
+            todos: { ...todos }
+          }
+        }
+      }
+      if (group) {
+        return {
+          success: true,
+          name: group.name,
+          todos: { ...group.todos }
+        }
+      }
+    }
+  }
+
+  public async removeTaskFromGroup(userId: string, groupId: string, taskId: string) {
+    const groupIdObj = new mongoose.Types.ObjectId(groupId);
+    const ownerId = new mongoose.Types.ObjectId(userId);
+    const groupExists = await this.groupModel.findOne({ _id: groupIdObj });
+    const task = await this.todoModel.findOne({ _id: taskId })
+
+    if (groupExists.owner.toString() !== ownerId.toString()) return {
+      success: false,
+      message: 'Failed to remove task from the group.'
     }
 
+    for (let i = groupExists.todos.length - 1; i >= 0; i--) {
+      let tasks = groupExists.todos[i];
+      if (tasks.title === task.title && tasks.author.email == task.author.email && tasks.createdAt.toDateString() == task.createdAt.toDateString()) {
+        groupExists.todos.splice(i, 1);
+      }
+    }
+
+    await groupExists.save()
+    return { success: true, message: 'Task removed successfully.' }
   }
 }
