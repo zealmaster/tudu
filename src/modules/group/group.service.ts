@@ -35,10 +35,10 @@ export class GroupService {
 
   public async getGroupByOwner(id: string) {
     const ownerId = new mongoose.Types.ObjectId(id);
-    const group = await this.groupModel.find({ owner: ownerId });
+    const groups = await this.groupModel.find({ owner: ownerId });
     return {
       success: true,
-      group
+      groups
     }
   }
 
@@ -163,7 +163,7 @@ export class GroupService {
   public async removeTaskFromGroup(userId: string, groupId: string, taskId: string) {
     const groupIdObj = new mongoose.Types.ObjectId(groupId);
     const ownerId = new mongoose.Types.ObjectId(userId);
-    const groupExists = await this.groupModel.findOne({ _id: groupIdObj });
+    const groupExists = await this.groupModel.findOne({ _id: groupId });
     const task = await this.todoModel.findOne({ _id: taskId })
 
     if (groupExists.owner.toString() !== ownerId.toString()) return {
@@ -180,5 +180,20 @@ export class GroupService {
 
     await groupExists.save()
     return { success: true, message: 'Task removed successfully.' }
+  }
+
+  public async getGroupById(userId: string, groupId: string) {
+    try {
+      const  ownerId = new mongoose.Types.ObjectId(userId);
+      const groupIdObj = new mongoose.Types.ObjectId(groupId);
+      const groupExists = await this.groupModel.findOne({ _id: groupIdObj, owner: ownerId });
+      return {
+        success: true, 
+        group: groupExists
+      }
+  
+    } catch (error) {
+      return {success: false, message: error};
+    }
   }
 }

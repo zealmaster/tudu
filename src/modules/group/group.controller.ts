@@ -59,8 +59,8 @@ export class GroupController {
 
   @Get('/:id')
   @UseGuards(AuthGuard('jwt'))
-  async getGroupById() {
-
+  async getGroupById(@Param('id') groupId: string, @Req() req) {
+     return await this.groupService.getGroupById(req.user.id, groupId);
   }
 
   @Put('/:id')
