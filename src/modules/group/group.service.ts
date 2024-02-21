@@ -196,4 +196,37 @@ export class GroupService {
       return {success: false, message: error};
     }
   }
+
+  public async editGroupName(name: string, userId: string, groupId: string) {
+    try {
+      const ownerId = new mongoose.Types.ObjectId(userId);
+      const groupIdObj = new mongoose.Types.ObjectId(groupId);
+  
+      const group = await this.groupModel.findOne({ _id: groupIdObj, owner: ownerId });
+  
+      if (!group) return {success: false, message: 'Group not found.'};
+        group.name = name;
+        await group.save();
+        return {success: true, message: 'Group name edited successfully.'}
+  
+    } catch (error) {
+      return {success: false, message: error};
+    }
+  }
+  public async deleteGroup(userId: string, groupId: string) {
+    try {
+      const ownerId = new mongoose.Types.ObjectId(userId);
+      const groupIdObj = new mongoose.Types.ObjectId(groupId);
+  
+      const group = await this.groupModel.findOne({ _id: groupIdObj, owner: ownerId });
+  
+      if (!group) return {success: false, message: 'Group not found.'};
+
+        await this.groupModel.deleteOne({ _id: groupIdObj});
+        return {success: true, message: 'Group deleted successfully.'}
+  
+    } catch (error) {
+      return {success: false, message: error};
+    }
+  }
 }

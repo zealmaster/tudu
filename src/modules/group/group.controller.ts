@@ -4,6 +4,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { CreateGroupDto } from './dto/create.dto';
 import { AddUserDto } from './dto/addUser.dto';
 import { AddTaskDto } from './dto/addTask.dto';
+import { EditNameDto } from './dto/editName.dto';
 
 @Controller('group')
 export class GroupController {
@@ -65,8 +66,13 @@ export class GroupController {
 
   @Put('/:id')
   @UseGuards(AuthGuard('jwt'))
-  async editGroupName() {
-
+  async editGroupName(@Body() body: EditNameDto, @Param('id') groupId: string, @Req() req) {
+    return await this.groupService.editGroupName(body.name, req.user.id, groupId)
+  }
+  @Delete('/:id')
+  @UseGuards(AuthGuard('jwt'))
+  async deleteGroup(@Param('id') groupId: string, @Req() req) {
+    return await this.groupService.deleteGroup(req.user.id, groupId)
   }
 
 }
