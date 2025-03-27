@@ -14,32 +14,44 @@ export class AuthService {
   ) {}
 
   async validateUser(username: string, password: string): Promise<any> {
-    const user = await this.userModel.findOne({ username });
-    if (user && (await bcrypt.compare(password, user.password))) {
-      const { password, ...result } = user;
-      return result;
+    try {
+      const user = await this.userModel.findOne({ username });
+      if (user && (await bcrypt.compare(password, user.password))) {
+        const { password, ...result } = user;
+        return result;
+      }
+      return {
+        success: false,
+        msg: 'Wrong credentials provided',
+      };
+    } catch (error) {
+      console.log('Validation error: ', error);
     }
-    return {
-      success: false,
-      msg: 'Wrong credentials provided',
-    };
   }
 
   public async loginUser(username: string) {
-    const userExists = await this.userModel.findOne({ username });
-    if (!userExists) {
+    try {
+      const userExists = await this.userModel.findOne({ username });
+      if (!userExists) {
+        return {
+          success: false,
+          msg: 'Username does not exist',
+        };
+      }
+      const payload = { email: userExists.email, sub: userExists.id, username: userExists.username };
+      const { password: _, ...user } = userExists.toObject();
+      return {
+        success: true,
+        msg: 'Login successful',
+        user,
+        access_token: this.jwtService.sign(payload),
+      };
+    } catch (error) {
+      console.log(error);
       return {
         success: false,
-        msg: 'Username does not exist',
+        msg: 'Problem logging in.',
       };
     }
-    const payload = {email: userExists.email, sub: userExists.id, username: userExists.username}
-    delete userExists.password;
-    return {
-      success: true,
-      msg: 'Login successful',
-      userExists,
-      access_token: this.jwtService.sign(payload)
-    };
   }
 }

@@ -27,13 +27,13 @@ export class TodoController {
     const userId = req.user.id;
     const user = await this.userService.findUserById(userId);
     if (body.email == user.email) return;
-    return await this.toDoService.shareTask(userId, body.email, { id: taskId });
+    return await this.toDoService.shareTask({ userId, email: body.email, taskId });
   }
 
   @Put('task/:id')
   @UseGuards(AuthGuard('jwt'))
   async updateTask(@Body() body, @Param() taskId: string, @Req() req) {
-    return await this.toDoService.updateTask(taskId, body, req.user.email);
+    return await this.toDoService.updateTask({ taskId, updateData: body, email: req.user.email });
   }
 
   @Delete('task/:id')
@@ -41,5 +41,4 @@ export class TodoController {
   async deleteTask(@Param() taskId: string, @Req() req) {
     return await this.toDoService.deleteTask(taskId, req.user.email);
   }
-
 }

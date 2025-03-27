@@ -21,17 +21,17 @@ export class GroupController {
   async getGroupByOwner(@Req() req) {
     return this.groupService.getGroupByOwner(req.user.id);
   }
-  
+
   @Put('add/user/:id')
   @UseGuards(AuthGuard('jwt'))
   async addUserToGroup(@Body() body: AddUserDto, @Param() groupId: string, @Req() req) {
-    return await this.groupService.addUser(req.user.id, groupId, body.email);
+    return await this.groupService.addUserToGroup({ userId: req.user.id, groupId, email: body.email });
   }
 
   @Delete('/user/:id')
   @UseGuards(AuthGuard('jwt'))
   async removeUserFromGroup(@Body() body: AddUserDto, @Param() groupId: string, @Req() req) {
-    return await this.groupService.removeUserFromGroup(req.user.id, groupId, body.email);
+    return await this.groupService.removeUserFromGroup({ userId: req.user.id, groupId, email: body.email });
   }
 
   @Get('user/:id')
@@ -43,36 +43,35 @@ export class GroupController {
   @Put('add/task/:id')
   @UseGuards(AuthGuard('jwt'))
   async addTaskToGroup(@Body() body: AddTaskDto, @Req() req, @Param() groupId: string) {
-    return await this.groupService.addTaskToGroup(req.user.id, groupId, body.taskId);
+    return await this.groupService.addTaskToGroup({ userId: req.user.id, groupId, taskId: body.taskId });
   }
 
   @Get('task/:id')
   @UseGuards(AuthGuard('jwt'))
   async getTasksInGroup(@Param('id') groupId: string, @Req() req) {
-    return await this.groupService.getTasksInGroup(req.user.id, groupId);
+    return await this.groupService.getTasksInGroup({ userId: req.user.id, groupId });
   }
 
   @Delete('task/:id')
   @UseGuards(AuthGuard('jwt'))
   async removeTaskFromGroup(@Body() body: AddTaskDto, @Param('id') groupId: string, @Req() req) {
-    return this.groupService.removeTaskFromGroup(req.user.id, groupId, body.taskId)
+    return this.groupService.removeTaskFromGroup({ userId: req.user.id, groupId, taskId: body.taskId });
   }
 
   @Get('/:id')
   @UseGuards(AuthGuard('jwt'))
   async getGroupById(@Param('id') groupId: string, @Req() req) {
-     return await this.groupService.getGroupById(req.user.id, groupId);
+    return await this.groupService.getGroupById({ userId: req.user.id, groupId });
   }
 
   @Put('/:id')
   @UseGuards(AuthGuard('jwt'))
   async editGroupName(@Body() body: EditNameDto, @Param('id') groupId: string, @Req() req) {
-    return await this.groupService.editGroupName(body.name, req.user.id, groupId)
+    return await this.groupService.editGroupName({ groupName: body.groupName, userId: req.user.id, groupId });
   }
   @Delete('/:id')
   @UseGuards(AuthGuard('jwt'))
   async deleteGroup(@Param('id') groupId: string, @Req() req) {
-    return await this.groupService.deleteGroup(req.user.id, groupId)
+    return await this.groupService.deleteGroup({ userId: req.user.id, groupId });
   }
-
 }
