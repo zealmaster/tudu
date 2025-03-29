@@ -16,42 +16,50 @@ export class TodoService {
   ) {}
 
   public async addToDo(email: string, data: AddTaskDto) {
-    const user = await this.userModel.findOne({ email });
-    delete user.password;
-    const newToDo = {
-      author: user,
-      title: data.title,
-      description: data.description,
-      dueDate: new Date(data?.dueDate),
-    };
-    const createToDo = new this.toDoModel(newToDo);
+    try {
+      const user = await this.userModel.findOne({ email });
+      delete user.password;
+      const newToDo = {
+        author: user,
+        title: data.title,
+        description: data.description,
+        dueDate: new Date(data?.dueDate),
+      };
+      const createToDo = new this.toDoModel(newToDo);
 
-    return {
-      success: true,
-      msg: 'To do added.',
-      added: await createToDo.save(),
-    };
+      return {
+        success: true,
+        msg: 'To do added.',
+        added: await createToDo.save(),
+      };
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   public async getTasksByUser(author: string, email: string) {
-    const tasks = await this.toDoModel.find({ author });
-    const shareWithMe = await this.toDoModel.find({ sharedWith: email });
-    return {
-      success: true,
-      tasks: { ...tasks, ...shareWithMe },
-    };
+    try {
+      const tasks = await this.toDoModel.find({ author });
+      const shareWithMe = await this.toDoModel.find({ sharedWith: email });
+      return {
+        success: true,
+        tasks: { ...tasks, ...shareWithMe },
+      };
+    } catch (error) {
+      console.log(error);
+    }
   }
 
-  public async shareTask(userId: string, email: string, taskIdObject: { id: string }) {
+  public async shareTask(data: { userId: string; email: string; taskId: string }) {
     try {
-      const emailExists = await this.userModel.findOne({ email });
+      const emailExists = await this.userModel.findOne({ email: data.email });
 
       if (!emailExists) {
         return { success: false, message: 'User does not exist.' };
       }
 
-      const taskId = new mongoose.Types.ObjectId(taskIdObject.id); // Convert taskId to ObjectId
-      const task = await this.toDoModel.findOne({ userId, _id: taskId }).lean();
+      const taskId = new mongoose.Types.ObjectId(data.taskId); // Convert taskId to ObjectId
+      const task = await this.toDoModel.findOne({ userId: data.userId, _id: taskId }).lean();
 
       if (!task) {
         return {
@@ -62,14 +70,14 @@ export class TodoService {
 
       if (task.sharedWith.length == undefined) task.sharedWith = [];
 
-      if (task.sharedWith.includes(email)) {
+      if (task.sharedWith.includes(data.email)) {
         return {
           success: false,
           message: 'Task is already shared with this user.',
         };
       }
 
-      await this.toDoModel.updateOne({ _id: taskId }, { $push: { sharedWith: email } });
+      await this.toDoModel.updateOne({ _id: taskId }, { $push: { sharedWith: data.email } });
 
       return {
         success: true,
@@ -84,55 +92,63 @@ export class TodoService {
     }
   }
 
-  public async updateTask(id: string, data: UpdateTaskDto, email: string) {
-    const taskId = new mongoose.Types.ObjectId(id);
-    const taskExists = await this.toDoModel.findOne({ _id: taskId });
-    if (!taskExists) return { success: false, message: 'Task does not exist' };
+  public async updateTask(data: { taskId: string; updateData: UpdateTaskDto; email: string }) {
+    try {
+      const taskId_ = new mongoose.Types.ObjectId(data.taskId);
+      const taskExists = await this.toDoModel.findOne({ _id: taskId_ });
+      if (!taskExists) return { success: false, message: 'Task does not exist' };
 
-    const author = await this.userModel.findOne({ email });
+      const author = await this.userModel.findOne({ email: data.email });
 
-    if (author.id == taskExists.author) {
-      await this.toDoModel.updateOne(
-        { _id: taskId },
-        {
-          $set: {
-            title: data?.title,
-            completed: data?.completed,
-            description: data?.description,
-            dueDate: data?.dueDate,
-          },
-        }
-      );
+      if (author.id == taskExists.author) {
+        await this.toDoModel.updateOne(
+          { _id: taskId_ },
+          {
+            $set: {
+              title: data.updateData?.title,
+              completed: data.updateData?.completed,
+              description: data.updateData?.description,
+              dueDate: data.updateData?.dueDate,
+            },
+          }
+        );
 
+        return {
+          success: true,
+          message: 'Task update successful.',
+        };
+      }
       return {
-        success: true,
-        message: 'Task update successful.',
+        success: false,
+        message: 'Task update failed',
       };
+    } catch (error) {
+      console.log(error);
     }
-    return {
-      success: false,
-      message: 'Task update failed',
-    };
   }
 
-  public async deleteTask(id: string, email: string) {
-    const taskId = new mongoose.Types.ObjectId(id);
+  public async deleteTask(taskId: string, email: string) {
+    try {
+      const taskId_ = new mongoose.Types.ObjectId(taskId);
 
-    const taskExists = await this.toDoModel.findOne({ _id: taskId });
-    if (!taskExists) return { success: false, message: 'Task does not exist' };
+      const taskExists = await this.toDoModel.findOne({ _id: taskId_ });
+      if (!taskExists) return { success: false, message: 'Task does not exist' };
 
-    const author = await this.userModel.findOne({ email });
+      const author = await this.userModel.findOne({ email });
 
-    if (author.id == taskExists.author) {
-      await this.toDoModel.deleteOne({ _id: taskId });
+      if (author.id == taskExists.author) {
+        await this.toDoModel.deleteOne({ _id: taskId_ });
+        return {
+          success: true,
+          message: 'Task delete successfull.',
+        };
+      }
       return {
-        success: true,
-        message: 'Task delete successfull.',
+        success: false,
+        message: 'Task delete failed.',
       };
+    } catch (error) {
+      console.log(error);
     }
-    return {
-      success: false,
-      message: 'Task delete failed.',
-    };
   }
 }

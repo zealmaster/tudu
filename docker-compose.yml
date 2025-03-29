@@ -1,0 +1,52 @@
+version: '3.8'
+
+volumes:
+  node_modules:
+  mongodb_data:
+
+networks:
+  tudu_network:
+    driver: bridge
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: tudu_app
+    ports:
+      - "8001:8001"
+    depends_on:
+      mongodb:
+        condition: service_healthy 
+    environment:
+      - MONGO_URI=mongodb://mongodb:27017/tudu
+    networks:
+      - tudu_network
+    volumes:
+      - .:/usr/src/app
+      - node_modules:/usr/src/app/node_modules
+    links:
+      - mongodb
+      - mailhog
+
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.runCommand({ ping: 1 })"]
+      interval: 10s
+      retries: 5
+    networks:
+      - tudu_network
+
+  mailhog:
+    image: mailhog/mailhog
+    container_name: mailhog
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+  

@@ -1,12 +1,14 @@
-FROM node:latest
+FROM node:20-slim
 
 WORKDIR /usr/src/app
 
-COPY package*.json ./
+COPY package.json yarn.lock ./
 
-RUN npm install
+RUN yarn install --frozen-lockfile
+RUN yarn remove bcrypt && yarn add bcrypt --force
 
 COPY . .
 
-EXPOSE 3000
+EXPOSE 8001
 
+CMD ["yarn", "start:dev"]
